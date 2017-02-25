@@ -1,13 +1,9 @@
-#!/usr/bin/python3
-
-
-'''
-
 import httplib2
 import pprint
 import json
 
-class API:
+
+class APIClient:
 
     def __init__( self, platform = None, api_key = None, domain = 'api.tevreden.nl' ):
             
@@ -16,7 +12,9 @@ class API:
         self.domain = domain
         
 
-    def call( self, method = 'GET', path = '/', body = None ):
+    def call( self, method = 'GET', path = '/', params = None, body = None ):
+        
+        # TODO params!
         
         h = httplib2.Http(".cache")
         (response, raw_content) = h.request(
@@ -38,65 +36,63 @@ class API:
         if response.status == 200 or response.status == 201:
             return decoded_content
         elif response.status == 400:
-            raise HttpBadRequestError(decoded_content['message'])
+            raise BadRequestError(decoded_content['message'])
         elif response.status == 401:
-            raise HttpUnauthorizedError(decoded_content['message'])
+            raise UnauthorizedError(decoded_content['message'])
         elif response.status == 403:
-            raise HttpForbiddenError(decoded_content['message'])
+            raise ForbiddenError(decoded_content['message'])
         elif response.status == 404:
-            raise HttpNotFoundError(decoded_content['message'])
+            raise NotFoundError(decoded_content['message'])
         elif response.status == 405:
-            raise HttpMethodNotAllowedError(decoded_content['message'])
+            raise MethodNotAllowedError(decoded_content['message'])
         elif response.status == 420:
-            raise HttpTooManyRequestsError(decoded_content['message'])
+            raise TooManyRequestsError(decoded_content['message'])
         elif response.status == 500:
-            raise HttpInternalServerError(decoded_content['message'])
+            raise InternalServerError(decoded_content['message'])
         elif response.status == 501:
-            raise HttpNotImplementedError(decoded_content['message'])
-            
-            
+            raise NotImplementedError(decoded_content['message'])
 
 
-class MissingPlatformError(Exception):
-    pass
-    
-    
-class MissingApiKeyError(Exception):
-    pass
+    def get_platforms( self ):
+        r = self.call( path = '/platforms' )
+        return r['platforms']
 
 
-class HttpError(Exception):
-    
+# Exceptions
+
+
+
+class APIError(Exception):
     def __init__(self, message):
         self.message = message
 
-
-class HttpBadRequestError(HttpError):
+class MissingPlatformError(APIError):
     pass
     
-class HttpUnauthorizedError(HttpError):
+class MissingApiKeyError(APIError):
     pass
 
-class HttpForbiddenError(HttpError):
-    pass
-
-class HttpNotFoundError(HttpError):
-    pass
-
-class HttpMethodNotAllowedError(HttpError):
-    pass
-
-class HttpTooManyRequestsError(HttpError):
+class BadRequestError(APIError):
     pass
     
-class HttpInternalServerError(HttpError):
+class UnauthorizedError(APIError):
+    pass
+
+class ForbiddenError(APIError):
+    pass
+
+class NotFoundError(APIError):
+    pass
+
+class MethodNotAllowedError(APIError):
+    pass
+
+class TooManyRequestsError(APIError):
     pass
     
-class HttpNotImplementedError(HttpError):
+class InternalServerError(APIError):
     pass
     
-    
-
-'''
-
+class NotImplementedError(APIError):
+    pass
     
